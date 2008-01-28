@@ -231,7 +231,11 @@ Patch60: db-4.2.52-libtool-fixes.patch
 BuildRequires:	ed autoconf%{?notmdk: >= 2.5}
 %else
 # txn_nolog added in 4.2.52-6mdk
+%if %mdkversion >= 200810
+BuildRequires: 	db4.2-devel = %{dbver}
+%else
 BuildRequires: 	db4-devel = %{dbver}
+%endif
 %endif
 
 Patch53: %pkg_name-2.2.19-ntlm.patch
