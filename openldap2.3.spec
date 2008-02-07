@@ -1,6 +1,6 @@
 %define pkg_name	openldap
-%define version	2.3.40
-%define rel 1
+%define version	2.3.39
+%define rel 6
 
 %{?!mklibname:%{error:You are missing macros, build will fail, see http://qa.mandriva.com/twiki/bin/view/Main/BackPorting}}
 
@@ -247,7 +247,21 @@ Patch54: MigrationTools-40-preserveldif.patch
 # for other possibly interesting patches
 # Similar patch was submitted and merged into HEAD/2.4
 Patch100: openldap-2.3.39-fix-hang-slapadd-noquick.patch
-Patch104: openldap-2.3-dont-write-to-testdir.patch
+#        Fixed slapd syncrepl compatibility with 2.4 (ITS#5231)
+Patch101: openldap-2.3.39-2.4-syncrepl-compat.patch
+#        Fixed slapo-translucent interactions with slapo-rwm (ITS#4889)
+Patch102: openldap-2.3.39-its4889.patch
+#        Fixed slapo-accesslog abandoned op cleanup (ITS#5161)
+Patch103: openldap-2.3.39-its5161.patch
+#        Fixed slapd-bdb/hdb dn2entry lock bug (ITS#5257)
+Patch104: openldap-2.3.39-its5257.patch
+#        Fixed slapd include handling (ITS#5276)
+Patch105: openldap-2.3.39-its5276.patch
+# post-2.3.40 CVS 
+# ITS#5358 Modrdn operation with NOOP control crashes BDB backend
+Patch106: openldap-2.3.39-its5358.patch
+
+Patch199: openldap-2.3-dont-write-to-testdir.patch
 # Not in CVS yet
 
 
@@ -525,7 +539,13 @@ popd
 
 # patches from CVS
 %patch100 -p1 -b .orig
-%patch104 -p1 -b .dont-write-to-testdir
+%patch101 -b .its5231
+%patch102 -b .its4889
+%patch103 -b .its5161
+#patch104 -b .its5257
+%patch105 -b .its5276
+%patch106 -b .its5358
+%patch199 -p1 -b .dont-write-to-testdir
 
 # README:
 cp %{SOURCE13} README.mdk
