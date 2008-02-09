@@ -1,6 +1,6 @@
 %define pkg_name	openldap
-%define version	2.3.39
-%define rel 6
+%define version	2.3.40
+%define rel 1
 
 %{?!mklibname:%{error:You are missing macros, build will fail, see http://qa.mandriva.com/twiki/bin/view/Main/BackPorting}}
 
@@ -245,25 +245,19 @@ Patch54: MigrationTools-40-preserveldif.patch
 #patches in CVS
 # see http://www.stanford.edu/services/directory/openldap/configuration/openldap-build.html
 # for other possibly interesting patches
-# Similar patch was submitted and merged into HEAD/2.4
-Patch100: openldap-2.3.39-fix-hang-slapadd-noquick.patch
-#        Fixed slapd syncrepl compatibility with 2.4 (ITS#5231)
-Patch101: openldap-2.3.39-2.4-syncrepl-compat.patch
-#        Fixed slapo-translucent interactions with slapo-rwm (ITS#4889)
-Patch102: openldap-2.3.39-its4889.patch
-#        Fixed slapo-accesslog abandoned op cleanup (ITS#5161)
-Patch103: openldap-2.3.39-its5161.patch
-#        Fixed slapd-bdb/hdb dn2entry lock bug (ITS#5257)
-Patch104: openldap-2.3.39-its5257.patch
-#        Fixed slapd include handling (ITS#5276)
-Patch105: openldap-2.3.39-its5276.patch
 # post-2.3.40 CVS 
 # ITS#5358 Modrdn operation with NOOP control crashes BDB backend
 Patch106: openldap-2.3.39-its5358.patch
 
+# Similar patch was submitted and merged into HEAD/2.4
 Patch199: openldap-2.3-dont-write-to-testdir.patch
 # Not in CVS yet
 
+# contributed Active Directory Password Cache overlay
+%if %{?_with_adpwc:1}%{?!_with_adpwc:0}
+Source200: OpenLDAP-password-cache-Sebastian-Hetze-pgk-070712.tgz
+Patch200: OpenLDAP-password-cache-Sebastian-Hetze-070630.patch
+%endif
 
 %{?_with_cyrussasl:BuildRequires: 	%{?!notmdk:libsasl-devel}%{?notmdk:cyrus-sasl-devel}}
 %{?_with_kerberos:BuildRequires:	krb5-devel}
@@ -509,6 +503,12 @@ popd >/dev/null
 %setup -q  -n %{pkg_name}-%{version} %{?_with_migration:-a 11}
 %endif
 
+%if %{?_with_adpwc:1}%{!?_with_adpwc:0}
+tar xvf %{SOURCE200}
+%patch200 -p1
+perl -pi -e 's/^(OPT=.*)$/$1 -fPIC/g' contrib/slapd-modules/adpwc/Makefile
+%endif
+
 %patch0 -p1 -b .config
 perl -pi -e 's/^(#define\s+DEFAULT_SLURPD_REPLICA_DIR.*)ldap(.*)/${1}ldap%{ol_major}${2}/' servers/slurpd/slurp.h
 perl -pi -e 's/LDAP_DIRSEP "run" //g' include/ldap_defaults.h
@@ -538,12 +538,7 @@ popd
 %patch53 -p1 -b .ntlm
 
 # patches from CVS
-%patch100 -p1 -b .orig
-%patch101 -b .its5231
-%patch102 -b .its4889
-%patch103 -b .its5161
-#patch104 -b .its5257
-%patch105 -b .its5276
+#patch100 -p1 -b .orig
 %patch106 -b .its5358
 %patch199 -p1 -b .dont-write-to-testdir
 
@@ -698,6 +693,10 @@ gcc -shared -fPIC -I../../../include -Wall -g -o pw-netscape.so netscape.c
 gcc -shared -fPIC -I../../../include -I /usr/kerberos/include -Wall -g -DHAVE_KRB5 -o pw-kerberos.so kerberos.c
 popd
 
+%if %{?_with_adpwc:1}%{?!_with_adpwc:0}
+make -C contrib/slapd-modules/adpwc
+%endif
+
 %check
 %if %{!?_without_test:1}%{?_without_test:0}
 #disable icecream:
@@ -718,6 +717,7 @@ export DONT_GPRINTIFY=1
 cp -af contrib/slapd-modules/smbk5pwd/README{,.smbk5passwd}
 cp -af contrib/slapd-modules/passwd/README{,.passwd}
 cp -af contrib/slapd-modules/acl/README{,.acl}
+cp -af contrib/slapd-modules/adpwc/README{,.acl}
 rm -Rf %{buildroot}
 
 %if %db4_internal
@@ -733,6 +733,9 @@ cp  contrib/slapd-modules/smbk5pwd/.libs/smbk5pwd.so* %{buildroot}/%{_libdir}/%{
 cp contrib/slapd-modules/acl/acl-posixgroup.so %{buildroot}/%{_libdir}/%{name}
 cp contrib/slapd-modules/passwd/pw-netscape.so %{buildroot}/%{_libdir}/%{name}
 cp contrib/slapd-modules/passwd/pw-kerberos.so %{buildroot}/%{_libdir}/%{name}
+%if %{?_with_adpwc:1}%{?!_with_adpwc:0}
+cp contrib/slapd-modules/adpwc/*.so.* %{buildroot}/%{_libdir}/%{name}
+%endif
 
 # try and ship the tests such that they will run properly
 
@@ -1188,8 +1191,12 @@ fi
 %endif
 
 %doc contrib/slapd-modules/smbk5pwd/README.smbk5passwd
-%doc contrib/slapd-modules/passwd/README{,.passwd}
-%doc contrib/slapd-modules/acl/README{,.acl}
+%doc contrib/slapd-modules/passwd/README.passwd
+%doc contrib/slapd-modules/acl/README.acl
+%if %{?_with_adpwc:1}%{?!_with_adpwc:0}
+%doc contrib/slapd-modules/adpwc/README.acl
+%endif
+
 
 %files clients
 %defattr(-,root,root)
