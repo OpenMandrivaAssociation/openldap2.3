@@ -717,7 +717,7 @@ export DONT_GPRINTIFY=1
 cp -af contrib/slapd-modules/smbk5pwd/README{,.smbk5passwd}
 cp -af contrib/slapd-modules/passwd/README{,.passwd}
 cp -af contrib/slapd-modules/acl/README{,.acl}
-cp -af contrib/slapd-modules/adpwc/README{,.acl}
+cp -af contrib/slapd-modules/adpwc/README{,.acl} || :
 rm -Rf %{buildroot}
 
 %if %db4_internal
