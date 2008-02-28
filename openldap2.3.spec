@@ -1,5 +1,5 @@
 %define pkg_name	openldap
-%define version	2.3.40
+%define version	2.3.41
 %define rel 2
 
 %{?!mklibname:%{error:You are missing macros, build will fail, see http://qa.mandriva.com/twiki/bin/view/Main/BackPorting}}
@@ -192,6 +192,9 @@ Source68: 	ldapns.schema
 Source100:	openldap-2.3-admin-guide-add-vendor-doc.patch
 Source101:	openldap-2.3-vendor-docs.tar.bz2
 
+# allop plugin from 2.4 tree
+Source110: allop-2.4.8.tar.gz
+
 # Chris Patches
 Patch0: 	%{pkg_name}-2.3.4-config.patch
 Patch1:		%{pkg_name}-2.0.7-module.patch
@@ -246,18 +249,17 @@ Patch54: MigrationTools-40-preserveldif.patch
 # see http://www.stanford.edu/services/directory/openldap/configuration/openldap-build.html
 # for other possibly interesting patches
 # post-2.3.40 CVS 
-# ITS#5358 Modrdn operation with NOOP control crashes BDB backend
-Patch106: openldap-2.3.39-its5358.patch
+
+# Allow allop building with 2.3 branch
+Patch110: allop-2.4.8-fix-build.patch
 
 # Similar patch was submitted and merged into HEAD/2.4
 Patch199: openldap-2.3-dont-write-to-testdir.patch
 # Not in CVS yet
 
 # contributed Active Directory Password Cache overlay
-%if %{?_with_adpwc:1}%{?!_with_adpwc:0}
 Source200: OpenLDAP-password-cache-Sebastian-Hetze-pgk-070712.tgz
 Patch200: OpenLDAP-password-cache-Sebastian-Hetze-070630.patch
-%endif
 
 %{?_with_cyrussasl:BuildRequires: 	%{?!notmdk:libsasl-devel}%{?notmdk:cyrus-sasl-devel}}
 %{?_with_kerberos:BuildRequires:	krb5-devel}
@@ -539,13 +541,17 @@ popd
 
 # patches from CVS
 #patch100 -p1 -b .orig
-%patch106 -b .its5358
 %patch199 -p1 -b .dont-write-to-testdir
 
 # README:
 cp %{SOURCE13} README.mdk
 
 #rm -f tests/scripts/test018*
+
+tar xzf %{SOURCE110} -C contrib/slapd-modules
+pushd contrib/slapd-modules/allop
+%patch110 -p1
+popd
 
 %build
 [ -n "%{buildroot}" -a "%{buildroot}" != / ] && rm -rf %{buildroot}
@@ -692,6 +698,9 @@ pushd contrib/slapd-modules/passwd
 gcc -shared -fPIC -I../../../include -Wall -g -o pw-netscape.so netscape.c
 gcc -shared -fPIC -I../../../include -I /usr/kerberos/include -Wall -g -DHAVE_KRB5 -o pw-kerberos.so kerberos.c
 popd
+pushd contrib/slapd-modules/allop
+gcc -shared -fPIC -I../../../include -I../../../servers/slapd -Wall -g -o allop.so allop.c
+popd
 
 %if %{?_with_adpwc:1}%{?!_with_adpwc:0}
 make -C contrib/slapd-modules/adpwc
@@ -717,7 +726,8 @@ export DONT_GPRINTIFY=1
 cp -af contrib/slapd-modules/smbk5pwd/README{,.smbk5passwd}
 cp -af contrib/slapd-modules/passwd/README{,.passwd}
 cp -af contrib/slapd-modules/acl/README{,.acl}
-cp -af contrib/slapd-modules/adpwc/README{,.acl} || :
+cp -af contrib/slapd-modules/allop/README{,.allop}
+cp -af contrib/slapd-modules/adpwc/README{,.adpwc} || :
 rm -Rf %{buildroot}
 
 %if %db4_internal
@@ -733,6 +743,8 @@ cp  contrib/slapd-modules/smbk5pwd/.libs/smbk5pwd.so* %{buildroot}/%{_libdir}/%{
 cp contrib/slapd-modules/acl/acl-posixgroup.so %{buildroot}/%{_libdir}/%{name}
 cp contrib/slapd-modules/passwd/pw-netscape.so %{buildroot}/%{_libdir}/%{name}
 cp contrib/slapd-modules/passwd/pw-kerberos.so %{buildroot}/%{_libdir}/%{name}
+cp contrib/slapd-modules/allop/allop.so %{buildroot}/%{_libdir}/%{name}
+cp contrib/slapd-modules/allop/slapo-allop.5 %{buildroot}/%{_mandir}/man5
 %if %{?_with_adpwc:1}%{?!_with_adpwc:0}
 cp contrib/slapd-modules/adpwc/*.so.* %{buildroot}/%{_libdir}/%{name}
 %endif
@@ -895,7 +907,8 @@ mv %{buildroot}/var/run/ldap%{ol_major}/openldap-data/DB_CONFIG.example %{buildr
 
 # bash completion
 install -d -m 755 %{buildroot}%{_sysconfdir}/bash_completion.d
-install -m 644 %{SOURCE5} %{buildroot}%{_sysconfdir}/bash_completion.d/openldap-clients
+install -m 644 %{SOURCE5} %{buildroot}%{_sysconfdir}/bash_completion.d/openldap%{ol_major}-clients
+perl -pi -e 's/ ldap(search|add|delete|modify|whoami|compare|passwd) / ldap${1}%{ol_major} /g' %{buildroot}%{_sysconfdir}/bash_completion.d/openldap%{ol_major}-clients
 
 %clean 
 [ -n "%{buildroot}" -a "%{buildroot}" != / ] && rm -rf %{buildroot}
@@ -1193,8 +1206,9 @@ fi
 %doc contrib/slapd-modules/smbk5pwd/README.smbk5passwd
 %doc contrib/slapd-modules/passwd/README.passwd
 %doc contrib/slapd-modules/acl/README.acl
+%doc contrib/slapd-modules/allop/README.allop
 %if %{?_with_adpwc:1}%{?!_with_adpwc:0}
-%doc contrib/slapd-modules/adpwc/README.acl
+%doc contrib/slapd-modules/adpwc/README.adpwc
 %endif
 
 
@@ -1203,7 +1217,7 @@ fi
 %{_bindir}/ldap*
 %{_mandir}/man1/*
 #%{_mandir}/man5/ud.conf.5*
-%{_sysconfdir}/bash_completion.d/openldap-clients
+%{_sysconfdir}/bash_completion.d/openldap%{ol_major}-clients
 
 %files -n %libname
 %defattr(-,root,root)
