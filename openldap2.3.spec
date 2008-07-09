@@ -204,6 +204,7 @@ Patch2:		openldap-2.3-smbk5passwd-paths.patch
 # For now, only build support for SMB (no krb5) changing support in smbk5passwd
 # overlay:
 Patch3:		openldap-2.3.4-smbk5passwd-only-smb.patch
+Patch4:		openldap-2.3-fix-pthread-linking.patch
 
 # RH + PLD Patches
 Patch15:	%{pkg_name}-cldap.patch
@@ -532,6 +533,7 @@ perl -pi -e 's/LDAP_DIRSEP "run" //g' include/ldap_defaults.h
 %if !%build_heimdal
 %patch3 -p1 -b .smbonly
 %endif
+%patch4 -p1
 
 %patch15 -p1 -b .cldap 
 
