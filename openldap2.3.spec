@@ -520,7 +520,8 @@ popd >/dev/null
 %endif
 
 %if %{?_with_adpwc:1}%{!?_with_adpwc:0}
-tar xvf %{SOURCE200}
+gzip -dc %{SOURCE200} | tar xf -
+#tar xvf %{SOURCE200}
 %patch200 -p1
 perl -pi -e 's/^(OPT=.*)$/$1 -fPIC/g' contrib/slapd-modules/adpwc/Makefile
 %endif
