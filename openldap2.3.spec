@@ -1,5 +1,5 @@
 %define pkg_name	openldap
-%define version	2.3.42
+%define version	2.3.43
 %define rel 1
 
 %{?!mklibname:%{error:You are missing macros, build will fail, see http://qa.mandriva.com/twiki/bin/view/Main/BackPorting}}
@@ -250,19 +250,11 @@ Patch54: MigrationTools-40-preserveldif.patch
 # see http://www.stanford.edu/services/directory/openldap/configuration/openldap-build.html
 # for other possibly interesting patches
 # post-2.3.42 CVS 
-#ITS5594 / ITS5489
-Patch101: openldap-2.3-its-5489.patch
-# ITS 5532
-Patch103: openldap-2.3-its-5532.patch
-# ITS 5580
-Patch104: openldap-2.3-its-5580.patch
 
 # Not in CVS yet:
 # ITS 5401/5565:
 Patch106: openldap-smbk5pwd-2.4.8-fix-password-termination.patch
 Patch107: openldap-smbk5pwd-2.4.8-dont-use-internal-functions.patch
-Patch108: openldap-2.3-its5401.patch
-Patch109: openldap-2.3-ppolicy-allow-mods-after-exop.patch
 
 # Allow allop building with 2.3 branch
 Patch110: allop-2.4.8-fix-build.patch
@@ -557,12 +549,6 @@ popd
 
 # patches from CVS
 # In rel_eng_2_3 on 20080709
-# ITS 5489
-%patch101 -p0 -b .its5489
-# ITS 5532
-%patch103 -p0 -b .its5532
-# ITS 5580
-%patch104 -p0 -b .its5580
 # Not in rel_eng_2_3 on 20080709
 # fixes from openldap-smbk5pwd
 pushd contrib/slapd-modules/smbk5pwd
@@ -570,8 +556,6 @@ pushd contrib/slapd-modules/smbk5pwd
 %patch107 -p0
 popd
 
-%patch108 -p0 -b .its5401
-%patch109 -p0 -b .its5569
 %patch199 -p1 -b .dont-write-to-testdir
 
 # README:
