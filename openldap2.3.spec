@@ -1,6 +1,6 @@
 %define pkg_name	openldap
 %define version	2.3.43
-%define rel 1
+%define rel 2
 
 %{?!mklibname:%{error:You are missing macros, build will fail, see http://qa.mandriva.com/twiki/bin/view/Main/BackPorting}}
 
@@ -526,7 +526,7 @@ perl -pi -e 's/LDAP_DIRSEP "run" //g' include/ldap_defaults.h
 %if !%build_heimdal
 %patch3 -p1 -b .smbonly
 %endif
-%patch4 -p1
+%patch4 -p1 -b .pthreadlinkfix
 
 %patch15 -p1 -b .cldap 
 
