@@ -1,6 +1,6 @@
 %define pkg_name	openldap
 %define version	2.3.43
-%define rel 5
+%define rel 6
 
 %{?!mklibname:%{error:You are missing macros, build will fail, see http://qa.mandriva.com/twiki/bin/view/Main/BackPorting}}
 
@@ -139,7 +139,6 @@ Source13:	README-openldap2.3.mdk
 # Specific source
 Source1: 	ldap.init
 Source2: 	%{pkg_name}.sysconfig
-Source5: 	bash-completion
 Source19:	gencert.sh
 Source20:	ldap.logrotate
 Source21:	slapd.conf
@@ -929,11 +928,6 @@ perl -pi -e 's/ldap/ldap%{ol_major}/' %{buildroot}/%{_sysconfdir}/logrotate.d/ld
 
 mv %{buildroot}/var/run/ldap%{ol_major}/openldap-data/DB_CONFIG.example %{buildroot}/%{_var}/lib/ldap%{ol_major}/
 
-# bash completion
-install -d -m 755 %{buildroot}%{_sysconfdir}/bash_completion.d
-install -m 644 %{SOURCE5} %{buildroot}%{_sysconfdir}/bash_completion.d/openldap%{ol_major}-clients
-perl -pi -e 's/ ldap(search|add|delete|modify|whoami|compare|passwd) / ldap${1}%{ol_major} /g' %{buildroot}%{_sysconfdir}/bash_completion.d/openldap%{ol_major}-clients
-
 %clean 
 [ -n "%{buildroot}" -a "%{buildroot}" != / ] && rm -rf %{buildroot}
 #rm -rf $RPM_BUILD_DIR/%{name}-%{version}
@@ -1249,7 +1243,6 @@ fi
 %{_bindir}/ldap*
 %{_mandir}/man1/*
 #%{_mandir}/man5/ud.conf.5*
-%{_sysconfdir}/bash_completion.d/openldap%{ol_major}-clients
 
 %files -n %libname
 %defattr(-,root,root)
