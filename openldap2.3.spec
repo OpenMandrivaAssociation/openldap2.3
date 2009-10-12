@@ -1,6 +1,6 @@
 %define pkg_name	openldap
 %define version	2.3.43
-%define rel 4
+%define rel 5
 
 %{?!mklibname:%{error:You are missing macros, build will fail, see http://qa.mandriva.com/twiki/bin/view/Main/BackPorting}}
 
@@ -205,6 +205,7 @@ Patch2:		openldap-2.3-smbk5passwd-paths.patch
 # overlay:
 Patch3:		openldap-2.3.4-smbk5passwd-only-smb.patch
 Patch4:		openldap-2.3-fix-pthread-linking.patch
+Patch5:		openldap2.3-gcc4.4-macro-fixes.patch
 
 # RH + PLD Patches
 Patch15:	%{pkg_name}-cldap.patch
@@ -527,6 +528,7 @@ perl -pi -e 's/LDAP_DIRSEP "run" //g' include/ldap_defaults.h
 %patch3 -p1 -b .smbonly
 %endif
 %patch4 -p1 -b .pthreadlinkfix
+%patch5 -p1 -b .gcc44macros
 
 %patch15 -p1 -b .cldap 
 
@@ -736,6 +738,8 @@ export LD_LIBRARY_PATH="${dbdir}/%{_libdir}"
 %endif
 # meta test seems to timeout on the Mandriva cluster:
 #export TEST_META=no
+# Use a pseudo-random number between 9000 and 10000 as base port for slapd in tests
+export SLAPD_BASEPORT=$[9000+RANDOM%1000]
 make -C tests %{!?tests:bdb}%{?tests:%tests}
 %endif
 
