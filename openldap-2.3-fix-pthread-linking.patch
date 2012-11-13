@@ -1,0 +1,12 @@
+diff -p -up openldap-2.3.43/libraries/libldap_r/Makefile.in.pthreadlinkfix openldap-2.3.43/libraries/libldap_r/Makefile.in
+--- openldap-2.3.43/libraries/libldap_r/Makefile.in.pthreadlinkfix	2008-02-12 00:24:13.000000000 +0100
++++ openldap-2.3.43/libraries/libldap_r/Makefile.in	2009-03-31 17:41:58.000000000 +0200
+@@ -56,7 +56,7 @@ XLIBS = $(LIBRARY) $(LDAP_LIBLBER_LA) $(
+ XXLIBS = $(SECURITY_LIBS) $(LUTIL_LIBS)
+ XXXLIBS = $(LTHREAD_LIBS)
+ NT_LINK_LIBS = $(LDAP_LIBLBER_LA) $(AC_LIBS) $(SECURITY_LIBS)
+-UNIX_LINK_LIBS = $(LDAP_LIBLBER_LA) $(AC_LIBS) $(SECURITY_LIBS)
++UNIX_LINK_LIBS = $(LDAP_LIBLBER_LA) $(AC_LIBS) $(SECURITY_LIBS) $(LTHREAD_LIBS)
+ 
+ .links : Makefile
+ 	@for i in $(XXSRCS); do \

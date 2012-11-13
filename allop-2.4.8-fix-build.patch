@@ -1,0 +1,12 @@
+diff -Naur allop/allop.c allop-fix-build/allop.c
+--- allop/allop.c	2008-02-11 18:26:38.000000000 -0500
++++ allop-fix-build/allop.c	2008-02-27 07:25:03.000000000 -0500
+@@ -141,7 +141,7 @@
+ }
+ 
+ static int
+-allop_db_destroy( BackendDB *be, ConfigReply *cr )
++allop_db_destroy( BackendDB *be)
+ {
+ 	slap_overinst	*on = (slap_overinst *)be->bd_info;
+ 	allop_t		*ao = (allop_t *)on->on_bi.bi_private;
